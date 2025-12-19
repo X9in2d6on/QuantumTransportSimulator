@@ -4,6 +4,10 @@ from matplotlib import cm
 import pandas as pd
 from mpl_toolkits.mplot3d import Axes3D
 
+# 设置中文字体
+plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Liberation Sans', 'Arial Unicode MS', 'SimHei']
+plt.rcParams['axes.unicode_minus'] = False
+
 # 加载结果数据
 def load_data(filename):
     """加载模拟器生成的CSV结果文件"""
@@ -19,9 +23,24 @@ def plot_potential_2d(df, z_slice=5.0):
     # 查找最接近指定z值的切片
     df_slice = df[np.abs(df['z(nm)'] - z_slice) < 0.1]
     
+    if len(df_slice) == 0:
+        print(f"警告: 没有找到z={z_slice}nm附近的数据，尝试使用可用的z值")
+        z_values = sorted(df['z(nm)'].unique())
+        if len(z_values) > 0:
+            z_slice = z_values[len(z_values)//2]  # 使用中间的z值
+            print(f"改用z={z_slice}nm")
+            df_slice = df[np.abs(df['z(nm)'] - z_slice) < 0.1]
+        else:
+            print("错误: 没有可用的z值数据")
+            return
+    
     # 提取唯一的x和y坐标
     x_values = np.sort(df_slice['x(nm)'].unique())
     y_values = np.sort(df_slice['y(nm)'].unique())
+    
+    if len(x_values) == 0 or len(y_values) == 0:
+        print("错误: 没有足够的x或y值数据")
+        return
     
     # 创建网格
     X, Y = np.meshgrid(x_values, y_values)
@@ -37,10 +56,10 @@ def plot_potential_2d(df, z_slice=5.0):
     # 绘制电势分布
     plt.figure(figsize=(10, 8))
     contour = plt.contourf(X, Y, potential, 50, cmap='viridis')
-    plt.colorbar(contour, label='电势 (V)')
-    plt.xlabel('X 位置 (nm)')
-    plt.ylabel('Y 位置 (nm)')
-    plt.title(f'Z = {z_slice} nm 处的电势分布')
+    plt.colorbar(contour, label='Potential (V)')
+    plt.xlabel('X Position (nm)')
+    plt.ylabel('Y Position (nm)')
+    plt.title(f'Potential Distribution at Z = {z_slice} nm')
     plt.savefig(f'potential_2d_z{z_slice}.png', dpi=300)
     plt.close()
 
@@ -58,15 +77,25 @@ def plot_potential_along_channel(df, y_middle=None, z_middle=None):
     # 查找最接近指定y和z值的切片
     df_slice = df[(np.abs(df['y(nm)'] - y_middle) < 0.5) & (np.abs(df['z(nm)'] - z_middle) < 0.5)]
     
+    if len(df_slice) == 0:
+        print("警告: 没有找到通道数据，尝试使用所有数据的中间位置")
+        y_middle = df['y(nm)'].median()
+        z_middle = df['z(nm)'].median()
+        df_slice = df[(np.abs(df['y(nm)'] - y_middle) < 1.0) & (np.abs(df['z(nm)'] - z_middle) < 1.0)]
+    
+    if len(df_slice) == 0:
+        print("错误: 仍然没有找到通道数据")
+        return
+    
     # 按x排序
     df_slice = df_slice.sort_values('x(nm)')
     
     # 绘制电势分布
     plt.figure(figsize=(12, 6))
     plt.plot(df_slice['x(nm)'], df_slice['potential(V)'], 'b-', linewidth=2)
-    plt.xlabel('X 位置 (nm)')
-    plt.ylabel('电势 (V)')
-    plt.title(f'通道中心线的电势分布 (y={y_middle:.1f}nm, z={z_middle:.1f}nm)')
+    plt.xlabel('X Position (nm)')
+    plt.ylabel('Potential (V)')
+    plt.title(f'Potential Along Channel Center (y={y_middle:.1f}nm, z={z_middle:.1f}nm)')
     plt.grid(True)
     plt.savefig('potential_along_channel.png', dpi=300)
     plt.close()
@@ -79,9 +108,24 @@ def plot_electron_density(df, z_slice=5.0):
     # 查找最接近指定z值的切片
     df_slice = df[np.abs(df['z(nm)'] - z_slice) < 0.1]
     
+    if len(df_slice) == 0:
+        print(f"警告: 没有找到z={z_slice}nm附近的数据，尝试使用可用的z值")
+        z_values = sorted(df['z(nm)'].unique())
+        if len(z_values) > 0:
+            z_slice = z_values[len(z_values)//2]
+            print(f"改用z={z_slice}nm")
+            df_slice = df[np.abs(df['z(nm)'] - z_slice) < 0.1]
+        else:
+            print("错误: 没有可用的z值数据")
+            return
+    
     # 提取唯一的x和y坐标
     x_values = np.sort(df_slice['x(nm)'].unique())
     y_values = np.sort(df_slice['y(nm)'].unique())
+    
+    if len(x_values) == 0 or len(y_values) == 0:
+        print("错误: 没有足够的x或y值数据")
+        return
     
     # 创建网格
     X, Y = np.meshgrid(x_values, y_values)
@@ -98,10 +142,10 @@ def plot_electron_density(df, z_slice=5.0):
     # 绘制电子密度分布
     plt.figure(figsize=(10, 8))
     contour = plt.contourf(X, Y, density, 50, cmap='plasma')
-    plt.colorbar(contour, label='电子密度 (log₁₀ cm⁻³)')
-    plt.xlabel('X 位置 (nm)')
-    plt.ylabel('Y 位置 (nm)')
-    plt.title(f'Z = {z_slice} nm 处的电子密度分布')
+    plt.colorbar(contour, label='Electron Density (log₁₀ cm⁻³)')
+    plt.xlabel('X Position (nm)')
+    plt.ylabel('Y Position (nm)')
+    plt.title(f'Electron Density Distribution at Z = {z_slice} nm')
     plt.savefig(f'electron_density_z{z_slice}.png', dpi=300)
     plt.close()
 
@@ -113,9 +157,24 @@ def plot_quantum_factor(df, z_slice=5.0):
     # 查找最接近指定z值的切片
     df_slice = df[np.abs(df['z(nm)'] - z_slice) < 0.1]
     
+    if len(df_slice) == 0:
+        print(f"警告: 没有找到z={z_slice}nm附近的数据，尝试使用可用的z值")
+        z_values = sorted(df['z(nm)'].unique())
+        if len(z_values) > 0:
+            z_slice = z_values[len(z_values)//2]
+            print(f"改用z={z_slice}nm")
+            df_slice = df[np.abs(df['z(nm)'] - z_slice) < 0.1]
+        else:
+            print("错误: 没有可用的z值数据")
+            return
+    
     # 提取唯一的x和y坐标
     x_values = np.sort(df_slice['x(nm)'].unique())
     y_values = np.sort(df_slice['y(nm)'].unique())
+    
+    if len(x_values) == 0 or len(y_values) == 0:
+        print("错误: 没有足够的x或y值数据")
+        return
     
     # 创建网格
     X, Y = np.meshgrid(x_values, y_values)
@@ -131,10 +190,10 @@ def plot_quantum_factor(df, z_slice=5.0):
     # 绘制量子修正因子分布
     plt.figure(figsize=(10, 8))
     contour = plt.contourf(X, Y, qfactor, 50, cmap='coolwarm')
-    plt.colorbar(contour, label='量子修正因子')
-    plt.xlabel('X 位置 (nm)')
-    plt.ylabel('Y 位置 (nm)')
-    plt.title(f'Z = {z_slice} nm 处的量子修正因子分布')
+    plt.colorbar(contour, label='Quantum Correction Factor')
+    plt.xlabel('X Position (nm)')
+    plt.ylabel('Y Position (nm)')
+    plt.title(f'Quantum Factor Distribution at Z = {z_slice} nm')
     plt.savefig(f'quantum_factor_z{z_slice}.png', dpi=300)
     plt.close()
 
@@ -164,9 +223,9 @@ def plot_iv_curves(filename='iv_curves.csv'):
         plt.plot(vgs_data['Vds(V)'], current_uA, 'o-', color=colors[i], linewidth=2, 
                  label=f'Vgs = {vgs} V')
     
-    plt.xlabel('漏源电压 Vds (V)')
-    plt.ylabel('漏电流 Ids (μA)')
-    plt.title('纳米MOSFET的输出特性曲线')
+    plt.xlabel('Drain-Source Voltage Vds (V)')
+    plt.ylabel('Drain current Ids (μA)')
+    plt.title('Nano FinFET Output Characterization Curves')
     plt.legend()
     plt.grid(True)
     plt.savefig('output_characteristics.png', dpi=300)
@@ -190,9 +249,9 @@ def plot_iv_curves(filename='iv_curves.csv'):
         plt.plot(vds_data['Vgs(V)'], current_uA, 'o-', color=colors[i], linewidth=2,
                  label=f'Vds = {vds:.1f} V')
     
-    plt.xlabel('栅源电压 Vgs (V)')
-    plt.ylabel('漏电流 Ids (μA)')
-    plt.title('纳米MOSFET的转移特性曲线')
+    plt.xlabel('Gate Source Voltage Vgs (V)')
+    plt.ylabel('Drain current Ids (μA)')
+    plt.title(' Nanometer FinFET Transfer Characterization Curves')
     plt.legend()
     plt.grid(True)
     plt.savefig('transfer_characteristics.png', dpi=300)
@@ -212,9 +271,9 @@ def plot_iv_curves(filename='iv_curves.csv'):
         plt.semilogy(vds_data['Vgs(V)'], current_uA, 'o-', color=colors[i], linewidth=2,
                      label=f'Vds = {vds:.1f} V')
     
-    plt.xlabel('栅源电压 Vgs (V)')
-    plt.ylabel('漏电流 Ids (μA) [对数比例]')
-    plt.title('纳米MOSFET的对数比例转移特性曲线')
+    plt.xlabel('Gate Source Voltage Vgs (V)')
+    plt.ylabel('Drain current Ids (μA) [Log Scale]')
+    plt.title('Nano FinFET Logarithmic Transfer Characterization Curves')
     plt.legend()
     plt.grid(True)
     plt.savefig('log_transfer_characteristics.png', dpi=300)
