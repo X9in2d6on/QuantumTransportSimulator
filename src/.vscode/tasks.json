@@ -1,0 +1,65 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build_device_demo",
+            "type": "shell",
+            "command": "make",
+            "args": ["device_demo"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/build"
+            },
+            "problemMatcher": ["$gcc"],
+            "detail": "编译 device_demo 可执行文件"
+        },
+        {
+            "label": "build_iv_generator",
+            "type": "shell",
+            "command": "make",
+            "args": ["iv_generator"],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/build"
+            },
+            "problemMatcher": ["$gcc"],
+            "detail": "编译 iv_generator 可执行文件"
+        },
+        {
+            "label": "cmake_configure",
+            "type": "shell",
+            "command": "cmake",
+            "args": [".."],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/build"
+            },
+            "problemMatcher": [],
+            "detail": "配置CMake项目"
+        },
+        {
+            "label": "make_all",
+            "type": "shell",
+            "command": "make",
+            "args": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/build"
+            },
+            "problemMatcher": ["$gcc"],
+            "detail": "编译所有目标"
+        }
+    ]
+}
