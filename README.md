@@ -1,2 +1,3 @@
 # QuantumTransportSimulator
-本框架实现了一个基于纳米尺度MOSFET器件的三维量子输运模拟系统，能够模拟考虑量子效应的电子输运过程。框架采用C++编写，具有高性能和可扩展性，支持以下功能：   三维设备结构的精确模拟  量子效应修正的自适应调整  自洽泊松薛定谔方程求解  考虑界面态影响的载流子动力学  漂移扩散模型与量子效应的耦合  器件特性曲线的生成与分析
+This framework implements a 3D quantum transport simulation system based on nanoscale MOSFET devices, which is capable of simulating electron transport processes considering quantum effects. The framework is written in C++ with high performance and scalability, and supports the following functions: accurate simulation of 3D device structure, adaptive tuning of quantum effect corrections, solution of the self-consistent Poisson Schrödinger equation, carrier dynamics considering the influence of interfacial states, coupling of drift-diffusion model and quantum effects, and generation and analysis of device characteristic curves.
+
